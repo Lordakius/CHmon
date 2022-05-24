@@ -1,6 +1,6 @@
-<!-- markdownlint-disable MD024 -->
-
 # CLI
+
+THIS IS NOT USED RIGHT NOW BUT MIGHT BE USED IN THE FUTURE!
 
 Ajour accepts arguments and can even run certain operations on the command line
 without launching the GUI, such as updating all addons. This makes it possible to
