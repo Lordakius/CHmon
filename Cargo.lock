@@ -53,7 +53,6 @@ name = "ajour"
 version = "1.3.2"
 dependencies = [
  "ajour-core",
- "ajour-weak-auras",
  "ajour-widgets",
  "anyhow",
  "async-std",
@@ -120,23 +119,6 @@ dependencies = [
  "walkdir",
  "zip",
  "zstd",
-]
-
-[[package]]
-name = "ajour-weak-auras"
-version = "1.3.2"
-dependencies = [
- "ajour-core",
- "anyhow",
- "async-std",
- "futures",
- "isahc 1.4.0",
- "mlua",
- "percent-encoding",
- "serde",
- "serde_json",
- "structopt",
- "thiserror",
 ]
 
 [[package]]
@@ -452,15 +434,6 @@ dependencies = [
  "fastrand",
  "futures-lite",
  "once_cell",
-]
-
-[[package]]
-name = "bstr"
-version = "0.2.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90682c8d613ad3373e66de8c6411e0ae2ab2571e879d2efbf73558cc66f21279"
-dependencies = [
- "memchr",
 ]
 
 [[package]]
@@ -2379,24 +2352,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3bd0dd2cd90571056fdb71f6275fada10131182f84899f4b2a916e565d81d86"
 
 [[package]]
-name = "lua-src"
-version = "540.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3abacd03794cff973408c83f918215649d4b4612eb25049a305c2fd74e0f69f"
-dependencies = [
- "cc",
-]
-
-[[package]]
-name = "luajit-src"
-version = "210.2.0+resty5f13855"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49f85722ea9e022305a077b916c9271011a195ee8dc9b2b764fc78b0378e3b72"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "malloc_buf"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2530,21 +2485,6 @@ dependencies = [
  "net2",
  "winapi 0.2.8",
  "ws2_32-sys",
-]
-
-[[package]]
-name = "mlua"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f778acf55b288d9e0b81e7189988766499f4ec7f774b0965e30140295221e01d"
-dependencies = [
- "bstr",
- "cc",
- "lazy_static",
- "lua-src",
- "luajit-src",
- "num-traits",
- "pkg-config",
 ]
 
 [[package]]

@@ -24,14 +24,12 @@ pub fn data_container<'a>(
     error: &Option<anyhow::Error>,
     config: &Config,
     updatable_addons: usize,
-    updatable_wagos: usize,
     settings_button_state: &'a mut button::State,
     about_button_state: &'a mut button::State,
     catalog_mode_btn_state: &'a mut button::State,
     install_mode_btn_state: &'a mut button::State,
     self_update_state: &'a mut SelfUpdateState,
     flavor_picklist_state: &'a mut pick_list::State<Flavor>,
-    weak_auras_is_installed: bool,
 ) -> Container<'a, Message> {
     let flavor = config.wow.flavor;
     let mut valid_flavors = config
@@ -96,49 +94,6 @@ pub fn data_container<'a>(
         })
     };
 
-    let mut my_wago_table_row = {
-        let title_container = Container::new(
-            Text::new(localized_string("my-weakauras"))
-                .horizontal_alignment(HorizontalAlignment::Center)
-                .size(DEFAULT_FONT_SIZE),
-        )
-        .style(style::HoverableSegmentContainer(color_palette));
-        let text = {
-            match updatable_wagos {
-                0..=9 => format!("{}", updatable_wagos),
-                _ => "9+".to_owned(),
-            }
-        };
-        let notification_row = Row::new()
-            .push(Space::new(Length::Units(7), Length::Units(0)))
-            .push(
-                Text::new(text)
-                    .horizontal_alignment(HorizontalAlignment::Center)
-                    .size(10),
-            )
-            .push(Space::new(Length::Units(7), Length::Units(0)));
-        let notification_container = Container::new(notification_row)
-            .padding(3)
-            .style(style::HoverableSegmentAlternateContainer(color_palette));
-        let mut row = Row::new()
-            .height(Length::Units(24))
-            .align_items(Align::Center)
-            .push(Space::new(Length::Units(6), Length::Units(1)))
-            .push(title_container)
-            .push(Space::new(Length::Units(6), Length::Units(1)));
-
-        // Only display the notification container if we have any updatable wagos.
-        if updatable_wagos > 0 {
-            row = row
-                .push(notification_container)
-                .push(Space::new(Length::Units(6), Length::Units(1)));
-        }
-
-        TableRow::new(row).inner_row_height(24).on_press(move |_| {
-            Message::Interaction(Interaction::ModeSelected(Mode::MyWeakAuras(flavor)))
-        })
-    };
-
     let mut catalog_mode_button = Button::new(
         catalog_mode_btn_state,
         Text::new(localized_string("catalog")).size(DEFAULT_FONT_SIZE),
@@ -176,17 +131,6 @@ pub fn data_container<'a>(
 
             my_addons_table_row =
                 my_addons_table_row.style(style::SelectedSegmentTableRow(color_palette));
-            my_wago_table_row = my_wago_table_row.style(style::SegmentTableRow(color_palette));
-        }
-        Mode::MyWeakAuras(_) => {
-            catalog_mode_button = catalog_mode_button.style(style::DefaultButton(color_palette));
-            install_mode_button = install_mode_button.style(style::DefaultButton(color_palette));
-            about_mode_button = about_mode_button.style(style::DefaultButton(color_palette));
-            settings_mode_button = settings_mode_button.style(style::DefaultButton(color_palette));
-
-            my_addons_table_row = my_addons_table_row.style(style::SegmentTableRow(color_palette));
-            my_wago_table_row =
-                my_wago_table_row.style(style::SelectedSegmentTableRow(color_palette));
         }
         Mode::Install => {
             catalog_mode_button = catalog_mode_button.style(style::DefaultButton(color_palette));
@@ -196,7 +140,6 @@ pub fn data_container<'a>(
             settings_mode_button = settings_mode_button.style(style::DefaultButton(color_palette));
 
             my_addons_table_row = my_addons_table_row.style(style::SegmentTableRow(color_palette));
-            my_wago_table_row = my_wago_table_row.style(style::SegmentTableRow(color_palette));
         }
         Mode::Catalog => {
             catalog_mode_button =
@@ -206,7 +149,6 @@ pub fn data_container<'a>(
             settings_mode_button = settings_mode_button.style(style::DefaultButton(color_palette));
 
             my_addons_table_row = my_addons_table_row.style(style::SegmentTableRow(color_palette));
-            my_wago_table_row = my_wago_table_row.style(style::SegmentTableRow(color_palette));
         }
         Mode::Settings => {
             catalog_mode_button = catalog_mode_button.style(style::DefaultButton(color_palette));
@@ -216,7 +158,6 @@ pub fn data_container<'a>(
                 settings_mode_button.style(style::SelectedDefaultButton(color_palette));
 
             my_addons_table_row = my_addons_table_row.style(style::SegmentTableRow(color_palette));
-            my_wago_table_row = my_wago_table_row.style(style::SegmentTableRow(color_palette));
         }
         Mode::About => {
             catalog_mode_button = catalog_mode_button.style(style::DefaultButton(color_palette));
@@ -226,7 +167,6 @@ pub fn data_container<'a>(
             settings_mode_button = settings_mode_button.style(style::DefaultButton(color_palette));
 
             my_addons_table_row = my_addons_table_row.style(style::SegmentTableRow(color_palette));
-            my_wago_table_row = my_wago_table_row.style(style::SegmentTableRow(color_palette));
         }
     }
 
@@ -253,10 +193,6 @@ pub fn data_container<'a>(
         .spacing(1);
 
     let mut segmented_mode_row = Row::new().push(my_addons_table_row).spacing(1);
-
-    if weak_auras_is_installed {
-        segmented_mode_row = segmented_mode_row.push(my_wago_table_row);
-    }
 
     let segmented_mode_container = Container::new(segmented_mode_row)
         .padding(2)

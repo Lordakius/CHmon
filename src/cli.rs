@@ -82,12 +82,10 @@ pub struct Opts {
 
 #[derive(Debug, StructOpt)]
 pub enum Command {
-    /// Update all addons, WeakAura and Plater auras
+    /// Update all addons 
     Update,
     /// Update all addons
     UpdateAddons,
-    /// Update all WeakAura and Plater auras
-    UpdateAuras,
     /// Install an addon
     Install {
         #[structopt(parse(try_from_str = str_to_flavor), possible_values = &["retail","ptr","beta","classic_tbc","classic_era","classic_era_ptr","classic_ptr","classic_beta"])]

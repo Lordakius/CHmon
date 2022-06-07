@@ -57,9 +57,6 @@ pub struct Config {
     #[serde(default)]
     pub self_update_channel: SelfUpdateChannel,
 
-    #[serde(default)]
-    pub weak_auras_account: HashMap<Flavor, String>,
-
     #[serde(default = "default_true")]
     pub alternating_row_colors: bool,
 
@@ -236,8 +233,6 @@ pub enum ColumnConfig {
     V3 {
         my_addons_columns: Vec<ColumnConfigV2>,
         catalog_columns: Vec<ColumnConfigV2>,
-        #[serde(default)]
-        aura_columns: Vec<ColumnConfigV2>,
     },
 }
 
