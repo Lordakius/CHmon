@@ -2,7 +2,7 @@ use {
     super::{DEFAULT_FONT_SIZE, DEFAULT_HEADER_FONT_SIZE, DEFAULT_PADDING},
     crate::gui::{style, Interaction, Message},
     crate::localization::localized_string,
-    ajour_core::{theme::ColorPalette, utility::Release},
+    ajour_core::{theme::ColorPalette},
     iced::{
         button, scrollable, Button, Column, Container, Element, Length, Row, Scrollable, Space,
         Text,
@@ -13,7 +13,6 @@ use {
 
 pub fn data_container<'a>(
     color_palette: ColorPalette,
-    release: &Option<Release>,
     scrollable_state: &'a mut scrollable::State,
     website_button_state: &'a mut button::State,
     donation_button_state: &'a mut button::State,
@@ -21,24 +20,6 @@ pub fn data_container<'a>(
     let ajour_title = Text::new(localized_string("ajour")).size(DEFAULT_HEADER_FONT_SIZE);
     let ajour_title_container =
         Container::new(ajour_title).style(style::BrightBackgroundContainer(color_palette));
-
-    let changelog_title_text = Text::new(if let Some(release) = release {
-        let mut vars = HashMap::new();
-        // TODO (casperstorm): change "addon" to "tag" or "version".
-        vars.insert("addon".to_string(), &release.tag_name);
-        let fmt = localized_string("changelog-for");
-        strfmt(&fmt, &vars).unwrap()
-    } else {
-        localized_string("changelog")
-    })
-    .size(DEFAULT_FONT_SIZE);
-
-    let changelog_text = Text::new(if let Some(release) = release {
-        release.body.clone()
-    } else {
-        localized_string("no-changelog")
-    })
-    .size(DEFAULT_FONT_SIZE);
 
     let website_button: Element<Interaction> = Button::new(
         website_button_state,
@@ -66,19 +47,11 @@ pub fn data_container<'a>(
         .height(Length::FillPortion(1))
         .style(style::Scrollable(color_palette));
 
-    let changelog_text_container =
-        Container::new(changelog_text).style(style::NormalBackgroundContainer(color_palette));
-    let changelog_title_container =
-        Container::new(changelog_title_text).style(style::BrightBackgroundContainer(color_palette));
-
     scrollable = scrollable
         .push(ajour_title_container)
         .push(Space::new(Length::Units(0), Length::Units(DEFAULT_PADDING)))
         .push(button_row)
-        .push(Space::new(Length::Units(0), Length::Units(DEFAULT_PADDING)))
-        .push(changelog_title_container)
-        .push(Space::new(Length::Units(0), Length::Units(5)))
-        .push(changelog_text_container);
+        .push(Space::new(Length::Units(0), Length::Units(DEFAULT_PADDING)));
 
     let col = Column::new().push(scrollable);
     let row = Row::new()

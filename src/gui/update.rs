@@ -2,8 +2,7 @@ use {
     super::{
         Ajour, BackupFolderKind, CatalogCategory, CatalogColumnKey, CatalogRow,
         CatalogSource, ColumnKey, DownloadReason, ExpandType, GlobalReleaseChannel, InstallAddon,
-        InstallKind, InstallStatus, Interaction, Message, Mode, ReleaseChannel, SelfUpdateStatus,
-        SortDirection, State,
+        InstallKind, InstallStatus, Interaction, Message, Mode, ReleaseChannel, SortDirection, State,
     },
     crate::localization::{localized_string, LANG},
     crate::{log_error, Result},
@@ -24,7 +23,7 @@ use {
             batch_refresh_repository_packages, Changelog, RepositoryKind, RepositoryPackage,
         },
         share,
-        utility::{download_update_to_temp_file, get_latest_release, wow_path_resolution},
+        utility::{wow_path_resolution},
     },
     ajour_widgets::header::ResizeEvent,
     anyhow::Context,
@@ -1019,14 +1018,6 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
                 }
             }
         }
-        Message::LatestRelease(release) => {
-            log::debug!(
-                "Message::LatestRelease({:?})",
-                release.as_ref().map(|r| &r.tag_name)
-            );
-
-            ajour.self_update_state.latest_release = release;
-        }
         Message::Interaction(Interaction::SortColumn(column_key)) => {
             // Close details if shown.
             ajour.expanded_type = ExpandType::None;
@@ -1815,74 +1806,6 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
                 }
             }
         }
-        Message::Interaction(Interaction::UpdateAjour) => {
-            log::debug!("Interaction::UpdateAjour");
-
-            if let Some(release) = &ajour.self_update_state.latest_release {
-                let bin_name = bin_name().to_owned();
-
-                ajour.self_update_state.status = Some(SelfUpdateStatus::InProgress);
-
-                return Ok(Command::perform(
-                    download_update_to_temp_file(bin_name, release.clone()),
-                    Message::AjourUpdateDownloaded,
-                ));
-            }
-        }
-        Message::AjourUpdateDownloaded(result) => {
-            log::debug!("Message::AjourUpdateDownloaded");
-
-            match result.context(localized_string("error-update-ajour")) {
-                Ok((relaunch_path, cleanup_path)) => {
-                    // Remove first arg, which is path to binary. We don't use this first
-                    // arg as binary path because it's not reliable, per the docs.
-                    let mut args = std::env::args();
-                    args.next();
-                    let mut args: Vec<_> = args.collect();
-
-                    // Remove the `--self-update-temp` arg from args if it exists,
-                    // since we need to pass it cleanly. Otherwise new process will
-                    // fail during arg parsing.
-                    if let Some(idx) = args.iter().position(|a| a == "--self-update-temp") {
-                        args.remove(idx);
-                        // Remove path passed after this arg
-                        args.remove(idx);
-                    }
-
-                    match std::process::Command::new(&relaunch_path)
-                        .args(args)
-                        .arg("--self-update-temp")
-                        .arg(&cleanup_path)
-                        .spawn()
-                        .context(localized_string("error-update-ajour"))
-                    {
-                        Ok(_) => std::process::exit(0),
-                        Err(error) => {
-                            log_error(&error);
-                            ajour.error = Some(error);
-                            ajour.self_update_state.status = Some(SelfUpdateStatus::Failed);
-                        }
-                    }
-                }
-                Err(mut error) => {
-                    // Assign special error message when updating failed due to
-                    // permissions issues
-                    for cause in error.chain() {
-                        if let Some(io_error) = cause.downcast_ref::<std::io::Error>() {
-                            if io_error.kind() == std::io::ErrorKind::PermissionDenied {
-                                error = error
-                                    .context(localized_string("error-update-ajour-permission"));
-                                break;
-                            }
-                        }
-                    }
-
-                    log_error(&error);
-                    ajour.error = Some(error);
-                    ajour.self_update_state.status = Some(SelfUpdateStatus::Failed);
-                }
-            }
-        }
         Message::AddonCacheUpdated(Ok(entry)) => {
             log::debug!("Message::AddonCacheUpdated({})", entry.title);
         }
@@ -1970,18 +1893,6 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
             log_error(&error);
             ajour.error = Some(error);
         }
-        Message::Interaction(Interaction::PickSelfUpdateChannel(channel)) => {
-            log::debug!("Interaction::PickSelfUpdateChannel({:?})", channel);
-
-            ajour.config.self_update_channel = channel;
-
-            let _ = ajour.config.save();
-
-            return Ok(Command::perform(
-                get_latest_release(ajour.config.self_update_channel),
-                Message::LatestRelease,
-            ));
-        }
         Message::Interaction(Interaction::PickLocalizationLanguage(lang)) => {
             log::debug!("Interaction::PickLocalizationLanguage({:?})", lang);
 
@@ -2020,14 +1931,6 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
 
             ajour.config.addons.global_release_channel = channel;
             let _ = ajour.config.save();
-        }
-        Message::CheckLatestRelease(_) => {
-            log::debug!("Message::CheckLatestRelease");
-
-            return Ok(Command::perform(
-                get_latest_release(ajour.config.self_update_channel),
-                Message::LatestRelease,
-            ));
         }
         Message::Interaction(Interaction::AlternatingRowColorToggled(is_set)) => {
             log::debug!(

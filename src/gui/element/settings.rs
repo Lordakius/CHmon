@@ -7,7 +7,7 @@ use {
     crate::gui::{
         style, BackupFolderKind, BackupState, CatalogColumnKey, CatalogColumnSettings, ColumnKey,
         ColumnSettings, GlobalReleaseChannel, Interaction, Language, Message, ScaleState,
-        SelfUpdateChannelState, ShareState, ThemeState, WowDirectoryState,
+        ShareState, ThemeState, WowDirectoryState,
     },
     crate::localization::localized_string,
     ajour_core::{config::Config, theme::ColorPalette},
@@ -35,7 +35,6 @@ pub fn data_container<'a, 'b>(
     catalog_column_config: &'b [(CatalogColumnKey, Length, bool)],
     open_config_dir_button_state: &'a mut button::State,
     open_addons_dir_button_state: &'a mut button::State,
-    self_update_channel_state: &'a mut SelfUpdateChannelState,
     default_addon_release_channel_picklist_state: &'a mut pick_list::State<GlobalReleaseChannel>,
     reset_columns_button_state: &'a mut button::State,
     localization_picklist_state: &'a mut pick_list::State<Language>,
@@ -750,33 +749,6 @@ pub fn data_container<'a, 'b>(
         Column::new().push(checkbox_container)
     };
 
-    let self_update_channel_container = {
-        let channel_title = Container::new(
-            Text::new(localized_string("ajour-update-channel")).size(DEFAULT_FONT_SIZE),
-        )
-        .style(style::NormalBackgroundContainer(color_palette));
-        let channel_picklist: Element<_> = PickList::new(
-            &mut self_update_channel_state.picklist,
-            &self_update_channel_state.options[..],
-            Some(config.self_update_channel),
-            Interaction::PickSelfUpdateChannel,
-        )
-        .text_size(14)
-        .width(Length::Fill)
-        .style(style::PickList(color_palette))
-        .into();
-
-        let channel_container = Container::new(channel_picklist.map(Message::Interaction))
-            .center_y()
-            .width(Length::Units(120))
-            .style(style::NormalForegroundContainer(color_palette));
-
-        Column::new()
-            .push(channel_title)
-            .push(Space::new(Length::Units(0), Length::Units(5)))
-            .push(channel_container)
-    };
-
     let language_container = {
         let title = Container::new(Text::new(localized_string("language")).size(DEFAULT_FONT_SIZE))
             .style(style::NormalBackgroundContainer(color_palette));
@@ -866,8 +838,6 @@ pub fn data_container<'a, 'b>(
         .push(open_theme_row)
         .push(Space::new(Length::Units(0), Length::Units(10)))
         .push(alternate_row_color_column)
-        .push(Space::new(Length::Units(0), Length::Units(10)))
-        .push(self_update_channel_container)
         .push(Space::new(Length::Units(0), Length::Units(10)))
         .push(config_column)
         .push(Space::new(Length::Units(0), Length::Units(10)))

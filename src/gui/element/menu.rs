@@ -1,6 +1,6 @@
 use {
     super::{DEFAULT_FONT_SIZE, DEFAULT_PADDING},
-    crate::gui::{style, Interaction, Message, Mode, SelfUpdateState, State},
+    crate::gui::{style, Interaction, Message, Mode, State},
     crate::localization::localized_string,
     crate::VERSION,
     ajour_core::{
@@ -28,7 +28,6 @@ pub fn data_container<'a>(
     about_button_state: &'a mut button::State,
     catalog_mode_btn_state: &'a mut button::State,
     install_mode_btn_state: &'a mut button::State,
-    self_update_state: &'a mut SelfUpdateState,
     flavor_picklist_state: &'a mut pick_list::State<Flavor>,
 ) -> Container<'a, Message> {
     let flavor = config.wow.flavor;
@@ -239,26 +238,9 @@ pub fn data_container<'a>(
     #[cfg(target_os = "linux")]
     let is_updatable = std::env::var("APPIMAGE").is_ok();
 
-    let version_text = Text::new(if let Some(release) = &self_update_state.latest_release {
-        if VersionCompare::compare_to(&release.tag_name, VERSION, &CompOp::Gt).unwrap_or(false) {
-            if is_updatable {
-                needs_update = true;
-            }
-
-            format!(
-                "{} {} -> {}",
-                localized_string("new-update-available"),
-                VERSION,
-                &release.tag_name
-            )
-        } else {
-            VERSION.to_owned()
-        }
-    } else {
-        VERSION.to_owned()
-    })
-    .size(DEFAULT_FONT_SIZE)
-    .horizontal_alignment(HorizontalAlignment::Right);
+    let version_text = Text::new(VERSION.to_owned())
+        .size(DEFAULT_FONT_SIZE)
+        .horizontal_alignment(HorizontalAlignment::Right);
 
     let version_container = Container::new(version_text)
         .center_y()
@@ -283,30 +265,8 @@ pub fn data_container<'a>(
 
     let mut segmented_mode_control_row = Row::new().spacing(1);
 
-    // Add download button to latest github release page if Ajour update is available.
-    if needs_update {
-        let text = self_update_state
-            .status
-            .as_ref()
-            .map(|s| s.to_string())
-            .unwrap_or_else(|| localized_string("update"));
-
-        let mut new_release_button = Button::new(
-            &mut self_update_state.btn_state,
-            Text::new(&text).size(DEFAULT_FONT_SIZE),
-        )
-        .style(style::SecondaryButton(color_palette));
-
-        new_release_button = new_release_button.on_press(Interaction::UpdateAjour);
-
-        let new_release_button: Element<Interaction> = new_release_button.into();
-
-        segmented_mode_control_row =
-            segmented_mode_control_row.push(new_release_button.map(Message::Interaction));
-    } else {
-        segmented_mode_control_row =
-            segmented_mode_control_row.push(about_mode_button.map(Message::Interaction));
-    }
+    segmented_mode_control_row =
+        segmented_mode_control_row.push(about_mode_button.map(Message::Interaction));
 
     segmented_mode_control_row =
         segmented_mode_control_row.push(settings_mode_button.map(Message::Interaction));

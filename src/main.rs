@@ -59,15 +59,6 @@ pub fn main() {
 
     setup_logger(is_cli, is_debug).expect("setup logging");
 
-    // Called when we launch from the temp (new release) binary during the self update
-    // process. We will rename the temp file (running process) to the original binary
-    if let Some(cleanup_path) = &opts.self_update_temp {
-        if let Err(e) = handle_self_update_temp(cleanup_path) {
-            log_error(&e);
-            std::process::exit(1);
-        }
-    }
-
     log_panics::init();
 
     log::info!("Ajour {} has started.", VERSION);
@@ -167,42 +158,5 @@ fn setup_logger(is_cli: bool, is_debug: bool) -> Result<()> {
     };
 
     logger.apply()?;
-    Ok(())
-}
-
-fn handle_self_update_temp(cleanup_path: &Path) -> Result<()> {
-    #[cfg(not(target_os = "linux"))]
-    let current_bin = env::current_exe()?;
-
-    #[cfg(target_os = "linux")]
-    let current_bin =
-        PathBuf::from(env::var("APPIMAGE").context("error getting APPIMAGE env variable")?);
-
-    // Fix for self updating pre 0.5.4 to >= 0.5.4
-    //
-    // Pre 0.5.4, `cleanup_path` is actually the file name of the main bin name that
-    // got passed via the CLI in the self update process. We want to rename the
-    // current bin to that bin name. This was passed as a string of just the file
-    // name, so we want to make an actual full path out of it first.
-    if current_bin
-        .file_name()
-        .unwrap_or_default()
-        .to_str()
-        .unwrap_or_default()
-        .starts_with("tmp_")
-    {
-        let main_bin_name = cleanup_path;
-
-        let parent_dir = current_bin.parent().unwrap();
-
-        let main_bin = parent_dir.join(&main_bin_name);
-
-        rename(&current_bin, &main_bin)?;
-    } else {
-        remove_file(cleanup_path)?;
-    }
-
-    log::debug!("Ajour updated successfully");
-
     Ok(())
 }

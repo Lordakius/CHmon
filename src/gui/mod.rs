@@ -14,14 +14,14 @@ use ajour_core::{
         load_addon_cache, load_fingerprint_cache, AddonCache, AddonCacheEntry, FingerprintCache,
     },
     catalog::{self, Catalog, CatalogAddon},
-    config::{ColumnConfig, ColumnConfigV2, Config, Flavor, Language, SelfUpdateChannel},
+    config::{ColumnConfig, ColumnConfigV2, Config, Flavor, Language},
     error::*,
     fs::PersistentData,
     repository::{
         Changelog, CompressionFormat, GlobalReleaseChannel, ReleaseChannel, RepositoryPackage,
     },
     theme::{load_user_themes, Theme},
-    utility::{self, get_latest_release},
+    utility::{self},
 };
 use ajour_widgets::header;
 use async_std::sync::{Arc, Mutex};
@@ -151,9 +151,7 @@ pub enum Interaction {
     CatalogCategorySelected(CatalogCategory),
     CatalogResultSizeSelected(CatalogResultSize),
     CatalogSourceSelected(CatalogSource),
-    UpdateAjour,
     ToggleBackupFolder(bool, BackupFolderKind),
-    PickSelfUpdateChannel(SelfUpdateChannel),
     PickGlobalReleaseChannel(GlobalReleaseChannel),
     PickBackupCompressionFormat(CompressionFormat),
     PickLocalizationLanguage(Language),
@@ -183,7 +181,6 @@ pub enum Message {
     DownloadedAddon((DownloadReason, Flavor, String, Result<(), DownloadError>)),
     Error(anyhow::Error),
     Interaction(Interaction),
-    LatestRelease(Option<utility::Release>),
     None(()),
     Parse(()),
     ParsedAddons((Flavor, Result<Vec<Addon>, ParseError>)),
@@ -207,11 +204,9 @@ pub enum Message {
     BackupFinished(Result<NaiveDateTime, FilesystemError>),
     CatalogDownloaded(Result<Catalog, DownloadError>),
     InstallAddonFetched((Flavor, String, Result<Addon, RepositoryError>)),
-    AjourUpdateDownloaded(Result<(PathBuf, PathBuf), DownloadError>),
     AddonCacheUpdated(Result<AddonCacheEntry, CacheError>),
     AddonCacheEntryRemoved(Result<Option<AddonCacheEntry>, CacheError>),
     RefreshCatalog(Instant),
-    CheckLatestRelease(Instant),
     FetchedChangelog((Addon, Result<Changelog, RepositoryError>)),
     CheckRepositoryUpdates(Instant),
     RepositoryPackagesFetched((Flavor, Result<Vec<RepositoryPackage>, DownloadError>)),
@@ -232,7 +227,6 @@ pub struct Ajour {
     about_scrollable_state: scrollable::State,
     config: Config,
     expanded_type: ExpandType,
-    self_update_state: SelfUpdateState,
     refresh_btn_state: button::State,
     settings_btn_state: button::State,
     about_btn_state: button::State,
@@ -258,7 +252,6 @@ pub struct Ajour {
     open_config_dir_btn_state: button::State,
     open_addons_dir_btn_state: button::State,
     install_from_scm_state: InstallFromScmState,
-    self_update_channel_state: SelfUpdateChannelState,
     default_addon_release_channel_picklist_state: pick_list::State<GlobalReleaseChannel>,
     reset_columns_btn_state: button::State,
     localization_picklist_state: pick_list::State<Language>,
@@ -287,7 +280,6 @@ impl Default for Ajour {
             about_scrollable_state: Default::default(),
             config: Config::default(),
             expanded_type: ExpandType::None,
-            self_update_state: Default::default(),
             refresh_btn_state: Default::default(),
             settings_btn_state: Default::default(),
             about_btn_state: Default::default(),
@@ -313,10 +305,6 @@ impl Default for Ajour {
             open_config_dir_btn_state: Default::default(),
             open_addons_dir_btn_state: Default::default(),
             install_from_scm_state: Default::default(),
-            self_update_channel_state: SelfUpdateChannelState {
-                picklist: Default::default(),
-                options: SelfUpdateChannel::all(),
-            },
             default_addon_release_channel_picklist_state: Default::default(),
             reset_columns_btn_state: Default::default(),
             localization_picklist_state: Default::default(),
@@ -346,10 +334,6 @@ impl Application for Ajour {
     fn new(config: Config) -> (Self, Command<Message>) {
         let init_commands = vec![
             Command::perform(load_caches(), Message::CachesLoaded),
-            Command::perform(
-                get_latest_release(config.self_update_channel),
-                Message::LatestRelease,
-            ),
             Command::perform(load_user_themes(), Message::ThemesLoaded),
             Command::perform(
                 catalog_download_latest_or_use_cache(),
@@ -397,15 +381,12 @@ impl Application for Ajour {
         let runtime_subscription = iced_native::subscription::events().map(Message::RuntimeEvent);
         let catalog_subscription =
             iced_futures::time::every(Duration::from_secs(60 * 5)).map(Message::RefreshCatalog);
-        let new_release_subscription = iced_futures::time::every(Duration::from_secs(60 * 60))
-            .map(Message::CheckLatestRelease);
         let check_updates_subscription = iced_futures::time::every(Duration::from_secs(60 * 30))
             .map(Message::CheckRepositoryUpdates);
 
         iced::Subscription::batch(vec![
             runtime_subscription,
             catalog_subscription,
-            new_release_subscription,
             check_updates_subscription,
         ])
     }
@@ -438,9 +419,6 @@ impl Application for Ajour {
             !&addons.is_empty()
         };
 
-        // Used to display changelog later in the About screen.
-        let release_copy = self.self_update_state.latest_release.clone();
-
         // Menu container at the top of the applications.
         let updatable_addons = self
             .addons
@@ -460,7 +438,6 @@ impl Application for Ajour {
             &mut self.about_btn_state,
             &mut self.catalog_mode_btn_state,
             &mut self.install_mode_btn_state,
-            &mut self.self_update_state,
             &mut self.flavor_picklist_state,
         );
 
@@ -903,7 +880,6 @@ impl Application for Ajour {
                     &catalog_column_config,
                     &mut self.open_config_dir_btn_state,
                     &mut self.open_addons_dir_btn_state,
-                    &mut self.self_update_channel_state,
                     &mut self.default_addon_release_channel_picklist_state,
                     &mut self.reset_columns_btn_state,
                     &mut self.localization_picklist_state,
@@ -916,7 +892,6 @@ impl Application for Ajour {
             Mode::About => {
                 let about_container = element::about::data_container(
                     color_palette,
-                    &release_copy,
                     &mut self.about_scrollable_state,
                     &mut self.website_btn_state,
                     &mut self.donation_btn_state,
@@ -1931,34 +1906,6 @@ pub enum DownloadReason {
     Install,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum SelfUpdateStatus {
-    InProgress,
-    Failed,
-}
-
-impl std::fmt::Display for SelfUpdateStatus {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            SelfUpdateStatus::InProgress => localized_string("updating"),
-            SelfUpdateStatus::Failed => localized_string("failed"),
-        };
-        write!(f, "{}", s)
-    }
-}
-
-#[derive(Default, Debug)]
-pub struct SelfUpdateState {
-    latest_release: Option<utility::Release>,
-    status: Option<SelfUpdateStatus>,
-    btn_state: button::State,
-}
-
-#[derive(Debug)]
-pub struct SelfUpdateChannelState {
-    picklist: pick_list::State<SelfUpdateChannel>,
-    options: [SelfUpdateChannel; 2],
-}
 
 async fn load_caches() -> Result<(FingerprintCache, AddonCache)> {
     let fingerprint_cache = load_fingerprint_cache().await?;
