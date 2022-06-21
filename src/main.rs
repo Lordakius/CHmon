@@ -14,14 +14,9 @@ mod tray;
 
 use ajour_core::config::Config;
 use ajour_core::fs::{PersistentData, CONFIG_DIR};
-use ajour_core::utility::{remove_file, rename};
 
 #[cfg(target_os = "linux")]
-use anyhow::Context;
 use std::env;
-use std::path::Path;
-#[cfg(target_os = "linux")]
-use std::path::PathBuf;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 

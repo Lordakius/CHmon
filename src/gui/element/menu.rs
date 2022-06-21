@@ -13,7 +13,6 @@ use {
         PickList, Row, Space, Text,
     },
     std::collections::HashMap,
-    version_compare::{CompOp, VersionCompare},
 };
 
 #[allow(clippy::too_many_arguments)]
@@ -47,8 +46,6 @@ pub fn data_container<'a>(
     let mut settings_row = Row::new()
         .height(Length::Units(50))
         .push(Space::new(Length::Units(DEFAULT_PADDING), Length::Units(0)));
-
-    let mut needs_update = false;
 
     let mut my_addons_table_row = {
         let title_container = Container::new(
@@ -191,7 +188,7 @@ pub fn data_container<'a>(
         .push(install_mode_button.map(Message::Interaction))
         .spacing(1);
 
-    let mut segmented_mode_row = Row::new().push(my_addons_table_row).spacing(1);
+    let segmented_mode_row = Row::new().push(my_addons_table_row).spacing(1);
 
     let segmented_mode_container = Container::new(segmented_mode_row)
         .padding(2)
@@ -231,12 +228,6 @@ pub fn data_container<'a>(
         .padding(5)
         .width(Length::Fill)
         .style(style::NormalErrorForegroundContainer(color_palette));
-
-    #[cfg(not(target_os = "linux"))]
-    let is_updatable = true;
-
-    #[cfg(target_os = "linux")]
-    let is_updatable = std::env::var("APPIMAGE").is_ok();
 
     let version_text = Text::new(VERSION.to_owned())
         .size(DEFAULT_FONT_SIZE)

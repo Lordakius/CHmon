@@ -1,8 +1,6 @@
 use crate::config::{Flavor};
-use crate::error::DownloadError;
 #[cfg(target_os = "macos")]
 use crate::error::FilesystemError;
-use crate::network::download_file;
 
 use regex::Regex;
 use retry::delay::Fibonacci;

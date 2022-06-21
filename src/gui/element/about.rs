@@ -7,8 +7,6 @@ use {
         button, scrollable, Button, Column, Container, Element, Length, Row, Scrollable, Space,
         Text,
     },
-    std::collections::HashMap,
-    strfmt::strfmt,
 };
 
 pub fn data_container<'a>(

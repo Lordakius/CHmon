@@ -21,7 +21,6 @@ use ajour_core::{
         Changelog, CompressionFormat, GlobalReleaseChannel, ReleaseChannel, RepositoryPackage,
     },
     theme::{load_user_themes, Theme},
-    utility::{self},
 };
 use ajour_widgets::header;
 use async_std::sync::{Arc, Mutex};

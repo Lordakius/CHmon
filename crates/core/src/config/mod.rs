@@ -3,8 +3,6 @@ use crate::error::FilesystemError;
 use crate::repository::CompressionFormat;
 use glob::MatchOptions;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fmt::{self, Display, Formatter};
 use std::fs::create_dir_all;
 use std::path::{Path, PathBuf};
 

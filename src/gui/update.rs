@@ -2817,22 +2817,3 @@ fn save_column_configs(ajour: &mut Ajour) {
 
     let _ = ajour.config.save();
 }
-
-/// Hardcoded binary names for each compilation target
-/// that gets published to the Github Release
-const fn bin_name() -> &'static str {
-    #[cfg(target_os = "windows")]
-    {
-        "ajour.exe"
-    }
-
-    #[cfg(target_os = "macos")]
-    {
-        "ajour"
-    }
-
-    #[cfg(target_os = "linux")]
-    {
-        "ajour.AppImage"
-    }
-}
