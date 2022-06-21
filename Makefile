@@ -1,9 +1,9 @@
-TARGET = ajour
+TARGET = chmon
 
 RESOURCES_DIR = resources
 RELEASE_DIR = target/release
 
-APP_NAME = Ajour.app
+APP_NAME = chmon.app
 APP_TEMPLATE = $(RESOURCES_DIR)/osx/$(APP_NAME)
 APP_DIR = $(RELEASE_DIR)/osx
 APP_BINARY = $(RELEASE_DIR)/$(TARGET)
@@ -12,10 +12,10 @@ APP_RESOURCES_DIR = $(APP_DIR)/$(APP_NAME)/Contents/Resources
 
 APPIMAGE_NAME ?=
 APPIMAGE_DIR = $(RELEASE_DIR)/AppDir
-APPIMAGE_DESKTOP_FILE = $(RESOURCES_DIR)/linux/ajour.desktop
-APPIMAGE_LOGO_FILE = $(RESOURCES_DIR)/logo/256x256/ajour.png
+APPIMAGE_DESKTOP_FILE = $(RESOURCES_DIR)/linux/chmon.desktop
+APPIMAGE_LOGO_FILE = $(RESOURCES_DIR)/logo/256x256/chmon.png
 
-TAR_NAME = ajour.tar.gz
+TAR_NAME = chmon.tar.gz
 
 DMG_NAME ?=
 DMG_DIR = $(RELEASE_DIR)/osx
@@ -29,11 +29,11 @@ ifdef MACOS
 endif
 
 ifdef OPENGL
-  DMG_NAME :=ajour-opengl.dmg
-  APPIMAGE_NAME :=ajour-opengl.AppImage
+  DMG_NAME :=chmon-opengl.dmg
+  APPIMAGE_NAME :=chmon-opengl.AppImage
 else
-  DMG_NAME :=ajour.dmg
-  APPIMAGE_NAME :=ajour.AppImage
+  DMG_NAME :=chmon.dmg
+  APPIMAGE_NAME :=chmon.AppImage
   FEATURE_FLAG :=
 endif
 
@@ -53,7 +53,7 @@ $(TARGET):
 tar: $(TARGET) ## Create tar.gz of the binary
 	cd $(RELEASE_DIR) && tar -czf $(TAR_NAME) $(TARGET)
 
-app: $(APP_NAME) ## Clone Ajour.app template and mount binary
+app: $(APP_NAME) ## Clone chmon.app template and mount binary
 $(APP_NAME): $(TARGET)
 	@mkdir -p $(APP_BINARY_DIR)
 	@mkdir -p $(APP_RESOURCES_DIR)
@@ -62,12 +62,12 @@ $(APP_NAME): $(TARGET)
 	@touch -r "$(APP_BINARY)" "$(APP_DIR)/$(APP_NAME)"
 	@echo "Created '$@' in '$(APP_DIR)'"
 
-dmg: $(DMG_NAME) ## Pack Ajour.app into .dmg
+dmg: $(DMG_NAME) ## Pack chmon.app into .dmg
 $(DMG_NAME): $(APP_NAME)
 	@echo "Packing disk image..."
 	@ln -sf /Applications $(DMG_DIR)/Applications
 	@hdiutil create $(DMG_DIR)/$(DMG_NAME) \
-		-volname "Ajour" \
+		-volname "chmon" \
 		-fs HFS+ \
 		-srcfolder $(APP_DIR) \
 		-ov -format UDZO
