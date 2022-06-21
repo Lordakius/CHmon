@@ -58,7 +58,7 @@ pub fn localized_string(key: &str) -> String {
 }
 
 /// Returns a localized `timeago::Formatter`.
-/// If user has chosen a language whic his not supported by `timeago` we fallback to english.
+/// If user has chosen a language which is not supported by `timeago` we fallback to english.
 pub fn localized_timeago_formatter() -> timeago::Formatter<Box<dyn timeago::Language>> {
     let lang = LANG.get().expect("LANG not set").read().unwrap();
     let isolang = isolang::Language::from_locale(&lang).unwrap();
