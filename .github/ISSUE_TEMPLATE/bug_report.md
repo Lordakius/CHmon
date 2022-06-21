@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: 'B - bug'
+labels: ''
 assignees: ''
 
 ---
@@ -25,12 +25,17 @@ If applicable, add screenshots to help explain your problem.
 
 **Software involved**
 Please complete the following information:
- - OS: [e.g. "Windows 10"]
- - Ajour version: [e.g. "0.3.2"]
- - (if applicable) Addon name, flavor (classic or retail) and version:
+ - OS: [e.g. "Archlinux 5.18.5"]
 
 **Additional context**
 Add any other context about the problem here.
 
 **Log Output**
-Paste the content of `ajour.log` from `%APPDATA%\ajour\ajour.log` on Windows or `$HOME/.config/ajour/ajour.log` on Mac/Linux.
+
+
+<details>
+  <summary>Log</summary>
+  
+  Paste the content of `ajour.log` from `%APPDATA%\ajour\ajour.log` on Windows or `$HOME/.config/ajour/ajour.log` on Mac/Linux.
+  
+</details>
