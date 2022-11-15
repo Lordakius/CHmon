@@ -234,7 +234,7 @@ mod date_parser {
 
         // Handles WowI.
         if let Ok(ts) = &s.parse::<i64>() {
-            let date = Utc.timestamp(ts / 1000, 0);
+            let date = Utc.timestamp_opt(ts / 1000, 0).unwrap();
             return Ok(Some(date));
         }
 

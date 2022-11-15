@@ -1859,9 +1859,11 @@ pub fn handle_message(ajour: &mut Ajour, message: Message) -> Result<Command<Mes
             if let Some(last_updated) = &ajour.catalog_last_updated {
                 let now = Utc::now();
                 let now_time = now.time();
-                let refresh_time = NaiveTime::from_hms(2, 0, 0);
+                let refresh_time = NaiveTime::from_hms_opt(2, 0, 0);
 
-                if last_updated.date() < now.date() && now_time > refresh_time {
+                // TODO: using unwrap() here leads to the "old" behavior, panicing on null 
+                // this might not be what we desire, so I'll leave this todo for future reference
+                if last_updated.date_naive() < now.date_naive() && now_time > refresh_time.unwrap() {
                     log::debug!("Message::RefreshCatalog: catalog needs to be refreshed");
 
                     return Ok(Command::perform(
@@ -2801,14 +2803,14 @@ fn query_and_sort_catalog(ajour: &mut Ajour) {
 }
 
 fn save_column_configs(ajour: &mut Ajour) {
-    let my_addons_columns: Vec<_> = ajour
+    let _my_addons_columns: Vec<_> = ajour
         .header_state
         .columns
         .iter()
         .map(ColumnConfigV2::from)
         .collect();
 
-    let catalog_columns: Vec<_> = ajour
+    let _catalog_columns: Vec<_> = ajour
         .catalog_header_state
         .columns
         .iter()

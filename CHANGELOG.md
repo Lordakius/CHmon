@@ -12,13 +12,16 @@ and `Removed`.
 
 ### Packaging
 
-- bumped cargo packages 
+- bumped cargo packages (minor)
+- fixed build warnings
 
 ### Added
 
 ### Changed
 
 - changed English translation to correspond to new project name and purpose
+
+### Fixed
 
 ### Removed
 

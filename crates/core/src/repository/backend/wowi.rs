@@ -52,7 +52,7 @@ pub(crate) fn metadata_from_wowi_package(package: WowIPackage) -> RepositoryMeta
     {
         let version = package.version.clone();
         let download_url = package.download_uri.clone();
-        let date_time = Utc.timestamp(package.last_update / 1000, 0);
+        let date_time = Utc.timestamp_opt(package.last_update / 1000, 0).unwrap();
 
         let package = RemotePackage {
             version,
