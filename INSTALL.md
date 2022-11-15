@@ -3,6 +3,8 @@
 Please note I can only support Linux builds, so everything else should be taken with a grain of salt.
 Furthermore right now I recommend building from source.
 
+If you want to maintain other builds (or just test if they work), feel free to open a PR containing 
+instructions.
 
 ## Manual Installation
 
@@ -35,14 +37,7 @@ cargo build --release
 The application executable will be built to
 
 ```sh
-target/release/ajour
-```
-
-#### macOS
-
-```sh
-make app
-cp -r target/release/osx/CHmon.app /Applications/
+target/release/chmon
 ```
 
 #### Compatibility build

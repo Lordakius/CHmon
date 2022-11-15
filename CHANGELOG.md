@@ -10,5 +10,26 @@ and `Removed`.
 
 ## [Unreleased]
 
+### Packaging
+
+- bumped cargo packages 
+
+### Added
+
+### Changed
+
+- changed English translation to correspond to new project name and purpose
+
+### Removed
+
+- removed/commented unsupported languages (PRs are welcome!)
+
 ## [0.1.0]
 
+### Added
+
+- initial project, fork from ajour
+
+### Removed
+
+- remove a bunch of modules that we won't need for this project

@@ -956,8 +956,8 @@ impl Application for Ajour {
                     }
                     None => Some(element::status::data_container(
                         color_palette,
-                        &localized_string("setup-ajour-title")[..],
-                        &localized_string("setup-ajour-description")[..],
+                        &localized_string("setup-title")[..],
+                        &localized_string("setup-description")[..],
                         Some((
                             &mut self.status_button_state,
                             localized_string("select-directory"),
