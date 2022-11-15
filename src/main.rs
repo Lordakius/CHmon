@@ -56,9 +56,9 @@ pub fn main() {
 
     log_panics::init();
 
-    log::info!("Ajour {} has started.", VERSION);
+    log::info!("CHmon {} has started.", VERSION);
 
-    // Ensures another instance of Ajour isn't already running.
+    // Ensures another instance of CHmon isn't already running.
     #[cfg(target_os = "windows")]
     process::avoid_multiple_instances();
 
@@ -127,7 +127,7 @@ fn setup_logger(is_cli: bool, is_debug: bool) -> Result<()> {
         })
         .level(log::LevelFilter::Off)
         .level_for("panic", log::LevelFilter::Error)
-        .level_for("ajour", log::LevelFilter::Trace);
+        .level_for("chmon", log::LevelFilter::Trace);
 
     if !is_cli {
         logger = logger.level_for("ajour_core", log::LevelFilter::Trace);
